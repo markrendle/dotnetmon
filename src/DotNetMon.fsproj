@@ -51,6 +51,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Constants.fs" />
+    <Compile Include="Utils.fs" />
     <Compile Include="Cli.fs" />
     <Compile Include="ServerUtils.fs" />
     <Compile Include="Program.fs" />

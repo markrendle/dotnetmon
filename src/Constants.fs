@@ -1,6 +1,6 @@
 ﻿namespace DotNetMon
 
-module Constants =
+module Constants = 
     [<Literal>]
     let Ext = "-e"
     
@@ -15,6 +15,15 @@ module Constants =
     
     [<Literal>]
     let Lserver = "--server"
-    
+
     [<Literal>]
-    let Lprjpath = "--prjpath"
+    let Shelp = "-h"
+
+    [<Literal>]
+    let Lhelp = "--help"
+
+    [<Literal>]
+    let Lversion = "--version"
+
+    [<Literal>]
+    let Sversion = "-v"
