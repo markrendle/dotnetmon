@@ -20,7 +20,7 @@ module Cli =
         | Filter of Filters
         | Command of Commands
     
-    let getFilter (opts : string) fileName = 
+    let fileExtFilter (opts : string) fileName = 
         let reg = 
             opts
             |> cleanStringArgs [| ','; ' ' |]
@@ -28,6 +28,8 @@ module Cli =
         
         let s = sprintf "^.*\.(%s)$" reg
         Regex.IsMatch(fileName, s)
+    
+    let fileNameFilter wFile (fileName:string) = fileName.EndsWith(wFile)
 
     let buildAction (args : string) = 
         let arr = args |> cleanStringArgs [| ','; ' ' |]
@@ -41,8 +43,11 @@ module Cli =
             else sliced.[..sliced.Length - 1] |> String.concat " "
         [ for i in 0..args.Length - 1 do
               match args.[i].ToLower() with
-              | Sext | Lext -> yield Filter(Extension(getFilter, getCmndArgs args.[i + 1..]))
-              | Swatch | Lwatch -> yield Filter(Watch (getCmndArgs args.[i + 1..]))
+              | Sext | Lext -> yield Filter(Extension(fileExtFilter, getCmndArgs args.[i + 1..]))
+              | Swatch | Lwatch -> 
+                let arg = args.[i + 1]
+                if isFile arg then yield Filter(Extension(fileNameFilter, arg))
+                else yield Filter(Watch (arg))
               | Sexec | Lexec -> yield Command(Execution(buildAction, getCmndArgs args.[i + 1..]))
               | Lserver -> yield Command(RestartServer(args.[i + 1], args.[i + 2]))
               | Shelp | Lhelp -> yield Command(Print("Help!!"))

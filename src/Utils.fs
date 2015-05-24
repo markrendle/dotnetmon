@@ -26,9 +26,9 @@ module IoUtils =
         |> Array.filter (fun s -> not (String.IsNullOrWhiteSpace s))
         |> Array.map (fun s -> s.Trim())
     
+    let strEquals (equalsTo : string) (str : string) = str.Equals(equalsTo, StringComparison.OrdinalIgnoreCase)
+
     let buildDefaults (args : string array) currentDir = 
-        let strEquals (equalsTo : string) (str : string) = str.Equals(equalsTo, StringComparison.OrdinalIgnoreCase)
-        
         let checkServerparam arr = 
             if not (arr |> Array.exists (fun s -> s |> strEquals Constants.Lserver)) then 
                 if File.Exists(Path.Combine(currentDir, "project.json")) then 
@@ -49,6 +49,13 @@ module IoUtils =
         |> String.concat " "
         |> cleanStringArgs [| ' ' |]
     
+    let isFile path =
+        if Directory.Exists path || File.Exists path then
+            Path.HasExtension path
+        else
+            printfn "file or directory not found:\r\n%s" path
+            false        
+
     let runActions fileName (filters : (string -> bool) list) (commands : ProcessStartInfo list) 
         (sideActions : (unit -> unit) list) = 
         sideActions |> List.iter (fun act -> act())
