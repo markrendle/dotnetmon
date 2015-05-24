@@ -27,8 +27,33 @@ module IoUtils =
         |> Array.map (fun s -> s.Trim())
     
     let buildDefaults (args : string array) currentDir = 
-        let strArgs = args |> String.concat " "
-        if strArgs.Contains("--server") then strArgs |> cleanStringArgs [| ' ' |]
-        else if File.Exists(Path.Combine(currentDir, "project.json")) then 
-            strArgs + " --server kestrel ." |> cleanStringArgs [| ' ' |]
-        else strArgs |> cleanStringArgs [| ' ' |]
+        let strEquals (equalsTo : string) (str : string) = str.Equals(equalsTo, StringComparison.OrdinalIgnoreCase)
+        
+        let checkServerparam arr = 
+            if not (arr |> Array.exists (fun s -> s |> strEquals Constants.Lserver)) then 
+                if File.Exists(Path.Combine(currentDir, "project.json")) then 
+                    arr |> Array.append [| " --server kestrel ." |]
+                else arr
+            else arr
+        
+        let checkWatchParam arr = 
+            if not (arr |> Array.exists (fun s -> s
+                                                  |> strEquals Constants.Lwatch
+                                                  || s |> strEquals Constants.Swatch)) then 
+                arr |> Array.append [| Constants.Lwatch + " " + currentDir |]
+            else arr
+        
+        args
+        |> checkServerparam
+        |> checkWatchParam
+        |> String.concat " "
+        |> cleanStringArgs [| ' ' |]
+    
+    let runActions fileName (filters : (string -> bool) list) (commands : ProcessStartInfo list) 
+        (sideActions : (unit -> unit) list) = 
+        sideActions |> List.iter (fun act -> act())
+        let all = 
+            filters
+            |> List.map (fun apply -> apply fileName)
+            |> List.forall (fun success -> success = true)
+        if all then commands |> List.iter (fun proc -> startProcess proc)

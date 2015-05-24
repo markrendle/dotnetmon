@@ -2,13 +2,13 @@
 
 module Constants = 
     [<Literal>]
-    let Ext = "-e"
+    let Sext = "-e"
     
     [<Literal>]
     let Lext = "--ext"
     
     [<Literal>]
-    let Exec = "-x"
+    let Sexec = "-x"
     
     [<Literal>]
     let Lexec = "--exec"
@@ -27,3 +27,9 @@ module Constants =
 
     [<Literal>]
     let Sversion = "-v"
+
+    [<Literal>]
+    let Swatch = "-w"
+
+    [<Literal>]
+    let Lwatch = "--watch"

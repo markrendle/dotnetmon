@@ -4,10 +4,12 @@ module Cli =
     open System.Text.RegularExpressions
     open System.Diagnostics
     open Constants
-    open IoUtils
-    
+    open IoUtils    
+
     type Filters = 
         | Extension of (string -> string -> bool) * string
+        | Ignore of (string -> string -> bool) * string
+        | Watch of string
     
     type Commands = 
         | Execution of (string -> ProcessStartInfo) * string
@@ -18,7 +20,7 @@ module Cli =
         | Filter of Filters
         | Command of Commands
     
-    let getFilter fileName (opts : string) = 
+    let getFilter (opts : string) fileName = 
         let reg = 
             opts
             |> cleanStringArgs [| ','; ' ' |]
@@ -26,7 +28,7 @@ module Cli =
         
         let s = sprintf "^.*\.(%s)$" reg
         Regex.IsMatch(fileName, s)
-    
+
     let buildAction (args : string) = 
         let arr = args |> cleanStringArgs [| ','; ' ' |]
         let progargs = arr.[1..] |> String.concat " "
@@ -39,9 +41,10 @@ module Cli =
             else sliced.[..sliced.Length - 1] |> String.concat " "
         [ for i in 0..args.Length - 1 do
               match args.[i].ToLower() with
-              | Ext | Lext -> yield Filter(Extension(getFilter, getCmndArgs args.[i + 1..]))
-              | Exec | Lexec -> yield Command(Execution(buildAction, getCmndArgs args.[i + 1..]))
+              | Sext | Lext -> yield Filter(Extension(getFilter, getCmndArgs args.[i + 1..]))
+              | Swatch | Lwatch -> yield Filter(Watch (getCmndArgs args.[i + 1..]))
+              | Sexec | Lexec -> yield Command(Execution(buildAction, getCmndArgs args.[i + 1..]))
               | Lserver -> yield Command(RestartServer(args.[i + 1], args.[i + 2]))
               | Shelp | Lhelp -> yield Command(Print("Help!!"))
-              | Lversion | Sversion -> yield Command(Print("version 0.0.1"))
+              | Sversion | Lversion -> yield Command(Print("version 0.0.1"))              
               | _ -> () ]
