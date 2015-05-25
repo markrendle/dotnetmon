@@ -33,3 +33,9 @@ module Constants =
 
     [<Literal>]
     let Lwatch = "--watch"
+    
+    [<Literal>]
+    let Signore = "-i"
+
+    [<Literal>]
+    let Lignore = "--ignore"

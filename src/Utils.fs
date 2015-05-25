@@ -27,7 +27,7 @@ module IoUtils =
         |> Array.map (fun s -> s.Trim())
     
     let strEquals (equalsTo : string) (str : string) = str.Equals(equalsTo, StringComparison.OrdinalIgnoreCase)
-
+    
     let buildDefaults (args : string array) currentDir = 
         let checkServerparam arr = 
             if not (arr |> Array.exists (fun s -> s |> strEquals Constants.Lserver)) then 
@@ -41,26 +41,40 @@ module IoUtils =
                                                   |> strEquals Constants.Lwatch
                                                   || s |> strEquals Constants.Swatch)) then 
                 arr |> Array.append [| Constants.Lwatch + " " + currentDir |]
-            else arr
+            else 
+                for i in 0..arr.Length - 1 do
+                    if arr.[i]
+                       |> strEquals Constants.Lwatch
+                       || arr.[i] |> strEquals Constants.Swatch then 
+                        arr.[i + 1] <- Path.Combine(currentDir, arr.[i + 1])
+                arr
+        
+        let curateIgnores (arr : string array) = 
+            for i in 0..arr.Length - 1 do
+                if arr.[i]
+                   |> strEquals Constants.Signore
+                   || arr.[i] |> strEquals Constants.Lignore then arr.[i + 1] <- Path.Combine(currentDir, arr.[i + 1])
+            arr
         
         args
         |> checkServerparam
         |> checkWatchParam
+        |> curateIgnores
         |> String.concat " "
         |> cleanStringArgs [| ' ' |]
     
-    let isFile path =
-        if Directory.Exists path || File.Exists path then
-            Path.HasExtension path
-        else
+    let isFile path =         
+        if Directory.Exists path || File.Exists path then Path.HasExtension path
+        else 
             printfn "file or directory not found:\r\n%s" path
-            false        
-
+            false
+    
     let runActions fileName (filters : (string -> bool) list) (commands : ProcessStartInfo list) 
         (sideActions : (unit -> unit) list) = 
-        sideActions |> List.iter (fun act -> act())
         let all = 
             filters
             |> List.map (fun apply -> apply fileName)
             |> List.forall (fun success -> success = true)
-        if all then commands |> List.iter (fun proc -> startProcess proc)
+        if all then 
+            sideActions |> List.iter (fun act -> act())
+            commands |> List.iter (fun proc -> startProcess proc)

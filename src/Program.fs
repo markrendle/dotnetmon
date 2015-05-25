@@ -18,7 +18,7 @@ module Program =
         let filters = 
             [ for o in options do
                   match o with
-                  | Filter(Extension(act, args)) -> yield act args
+                  | Filter(File(filter, args)) -> yield filter args
                   | _ -> () ]
         
         let commands = 
@@ -27,8 +27,8 @@ module Program =
                   | Command(Execution(act, args)) -> yield act args
                   | Command(RestartServer(server, path)) -> yield startDnx server path
                   | _ -> () ]
-
-        let runActionsWrapper fileName = runActions fileName filters commands [stopServer]
+        
+        let runActionsWrapper fileName = runActions fileName filters commands [ stopServer ]
         let buildWatcher dir = 
             // TODO: Check if dirOrFile exists
             new Watcher(dir, //whatch
