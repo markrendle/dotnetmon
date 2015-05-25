@@ -40,8 +40,8 @@ module Cli =
             
             Regex.IsMatch(fileName, pattern)
         
-        let watchFileFilter expcFile givenFile = 
-            let pattern = sprintf "^%s$" expcFile
+        let watchFileFilter (expcFile:string) givenFile = 
+            let pattern = sprintf "^%s$" (Regex.Escape(expcFile))
             Regex.IsMatch(givenFile, pattern)
         
         let ignoreFileFilter expcFile givenFile = not (watchFileFilter expcFile givenFile)
