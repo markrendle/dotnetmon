@@ -67,7 +67,7 @@ module Cli =
               | Sexec | Lexec -> yield Command(Execution(buildAction (getCmndArgs args.[i + 1..])))
               | Lserver -> yield Command(RestartServer(args.[i + 1], args.[i + 2]))
               | Lverbose -> yield Command(Verbose)
-              | Shelp | Lhelp -> yield Command(Print("Help!!"))
+              | Shelp | Lhelp -> yield Command(Print(HelpMessage))
               | Sversion | Lversion -> yield Command(Print(sprintf "v%s"(getVersion())))
               | _ -> () ]
     
