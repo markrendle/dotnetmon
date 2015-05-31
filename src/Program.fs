@@ -2,42 +2,22 @@
 
 module Program = 
     open Cli
-    open FSWatcher
     open System
     open ServerUtils
     open IoUtils
-    open System.IO
-    open System.Diagnostics
+    open WatcherUtils
     
     [<EntryPoint>]
     let main argv = 
         let currentDir = Environment.CurrentDirectory
         Console.CancelKeyPress.Add(fun _ -> stopServer())
-        let options = parse (buildDefaults argv currentDir)
+        let options = 
+            argv
+            |> buildDefaults currentDir
+            |> parseWithFileSystem
         
-        let filters = 
-            [ for o in options do
-                  match o with
-                  | Filter(File(filter, args)) -> yield filter args
-                  | _ -> () ]
-        
-        let commands = 
-            [ for o in options do
-                  match o with
-                  | Command(Execution(act, args)) -> yield act args
-                  | Command(RestartServer(server, path)) -> yield startDnx server path
-                  | _ -> () ]
-        
-        let runActionsWrapper fileName = runActions fileName filters commands [ stopServer ]
-        let buildWatcher dir = 
-            // TODO: Check if dirOrFile exists
-            new Watcher(dir, //whatch
-                        (fun dirName -> runActionsWrapper dirName), //Dir created
-                        (fun dirName -> runActionsWrapper dirName), //Dir deleted 
-                        (fun fileName -> runActionsWrapper fileName), //File created
-                        (fun fileName -> runActionsWrapper fileName), //File changed
-                        (fun fileName -> runActionsWrapper fileName)) //File deleted  
         //OnStartActions
+        let mustLog = ref false
         options |> List.iter (function 
                        | Command(Print(msg)) -> 
                            printfn "%s" msg
@@ -45,12 +25,13 @@ module Program =
                        | Command(RestartServer(server, path)) -> 
                            stopServer()
                            startProcess (startDnx server path)
+                       | Command(Verbose) -> mustLog := true
                        | _ -> ())
-        //Start the watchers        
-        options |> List.iter (function 
-                       | Filter(Watch dir) -> 
-                           let w = buildWatcher (Path.Combine(currentDir, dir))
-                           w.Watch()
-                       | _ -> ())
+        //Start the watchers
+        let wOptions = 
+            { currentDir = currentDir
+              mustLog = mustLog.Value
+              logFunction = printfn "%s" }
+        options |> startWatcher wOptions
         System.Console.ReadKey |> ignore
         0

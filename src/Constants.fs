@@ -39,3 +39,6 @@ module Constants =
 
     [<Literal>]
     let Lignore = "--ignore"
+
+    [<Literal>]
+    let Lverbose = "--verbose"
