@@ -4,6 +4,7 @@ module IoUtils =
     open System.IO
     open System.Diagnostics
     open System
+    open System.Reflection
     
     type Result<'TSuccess,'TFailure> = 
     | Success of 'TSuccess
@@ -86,3 +87,8 @@ module IoUtils =
         if all then 
             sideActions |> List.iter (fun act -> act())
             commands |> List.iter (fun proc -> startProcess proc)
+
+    let getAssemblyVersion() =
+        let assembly = Assembly.GetExecutingAssembly()
+        let fileVersionInfo = FileVersionInfo.GetVersionInfo(assembly.Location)
+        fileVersionInfo.ProductVersion

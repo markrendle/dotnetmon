@@ -10,7 +10,7 @@ module CliTest =
     open Cli
     
     let mockIsFile (args : string) = IoUtils.Success (not (args.EndsWith @"\"))
-    let parseWithMockFile args = parse mockIsFile args
+    let parseWithMockFile args = parse mockIsFile (fun () -> "mock version") args
     
     [<TestCase([| "--ext"; "js" |], "foo.js")>]
     [<TestCase([| "-e"; "js" |], "foo.js")>]

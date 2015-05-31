@@ -20,7 +20,7 @@ module Cli =
         | Filter of Filters
         | Command of Commands
     
-    let parse (isFile : (string -> Result<bool,string>)) (args : string []) = 
+    let parse (isFile : (string -> Result<bool,string>)) (getVersion:(unit -> string)) (args : string []) = 
         let getCmndArgs (sliced : string array) = 
             let index = sliced |> Array.tryFindIndex (fun x -> x.StartsWith("-"))
             if index.IsSome then sliced.[..index.Value - 1] |> String.concat " "
@@ -68,7 +68,7 @@ module Cli =
               | Lserver -> yield Command(RestartServer(args.[i + 1], args.[i + 2]))
               | Lverbose -> yield Command(Verbose)
               | Shelp | Lhelp -> yield Command(Print("Help!!"))
-              | Sversion | Lversion -> yield Command(Print("version 0.0.1"))
+              | Sversion | Lversion -> yield Command(Print(sprintf "v%s"(getVersion())))
               | _ -> () ]
     
-    let parseWithFileSystem (args : string []) = parse isFile args
+    let parseWithFileSystem (args : string []) = parse isFile getAssemblyVersion args
